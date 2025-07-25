@@ -15,7 +15,7 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Ensure cookies.txt is in the final image
-COPY cookies.txt ./cookies.txt
+COPY cookies.txt /app/cookies.txt
 
 # Set Cloud Run expected port
 ENV PORT=8080
