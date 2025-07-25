@@ -1,4 +1,6 @@
-from flask import Flask, request, jsonify
+# main.py
+
+from flask import Flask, request, send_file
 import yt_dlp
 import os
 
@@ -7,37 +9,30 @@ app = Flask(__name__)
 @app.route("/", methods=["POST"])
 def download_audio():
     data = request.get_json()
-    yt_url = data.get("url")
+    video_url = data.get("video_url")
 
-    if not yt_url:
-        return jsonify({"error": "Missing 'url'"}), 400
+    if not video_url:
+        return {"error": "Missing video_url"}, 400
+
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'outtmpl': 'downloaded_audio.%(ext)s',
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }],
+    }
 
     try:
-        ydl_opts = {
-            'format': 'bestaudio/best',
-            'outtmpl': '/tmp/audio.%(ext)s',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
-        }
-
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([yt_url])
-
-        file_path = "/tmp/audio.mp3"
-        if not os.path.exists(file_path):
-            return jsonify({"error": "Audio not found"}), 500
-
-        return (
-            open(file_path, "rb").read(),
-            200,
-            {
-                "Content-Type": "audio/mpeg",
-                "Content-Disposition": "attachment; filename=audio.mp3"
-            }
-        )
-
+            ydl.download([video_url])
+        return send_file("downloaded_audio.mp3", as_attachment=True)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return {"error": str(e)}, 500
+
+# THIS is the critical part for Cloud Run
+if __name__ == "__main__":
+    import os
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
