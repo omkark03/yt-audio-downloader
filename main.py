@@ -15,15 +15,16 @@ def download_audio():
         return {"error": "Missing video_url"}, 400
 
     ydl_opts = {
-        'format': 'bestaudio/best',
-        'outtmpl': 'downloaded_audio.%(ext)s',
-        'cookiefile': 'cookies.txt',
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }],
-    }
+    'format': 'bestaudio/best',
+    'outtmpl': '/tmp/audio.%(ext)s',
+    'cookiefile': '/app/cookies.txt',  # ✅ absolute path
+    'postprocessors': [{
+        'key': 'FFmpegExtractAudio',
+        'preferredcodec': 'mp3',
+        'preferredquality': '192',
+    }],
+}
+
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
