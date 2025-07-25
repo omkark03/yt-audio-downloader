@@ -22,6 +22,7 @@ def download_audio():
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
+        'cookiefile': 'cookies.txt'
     }
 
     try:
